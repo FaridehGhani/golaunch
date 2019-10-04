@@ -1,4 +1,4 @@
-package convert
+package restful
 
 import (
 	"errors"
@@ -12,8 +12,8 @@ var (
 	errorModelNotStructOrSlice = errors.New("Model is not struct or slice of struct")
 )
 
-// MapToDTO convert nested model to flat DTO
-func MapToDTO(model interface{}, dto interface{}) error {
+// ConvertToDTO convert nested model to flat DTO
+func ConvertToDTO(model interface{}, dto interface{}) error {
 	modelReflect := reflect.ValueOf(model)
 	if modelReflect.Kind() == reflect.Ptr {
 		modelReflect = modelReflect.Elem()
@@ -63,7 +63,7 @@ func fillDTOFields(modelReflect reflect.Value, dtoReflect reflect.Value, dtoType
 		dtoField := dtoReflect.FieldByName(dtoTypeField.Name)
 
 		var modelField reflect.Value
-		if name, ok := dtoTypeField.Tag.Lookup("map"); ok {
+		if name, ok := dtoTypeField.Tag.Lookup("dto"); ok {
 			modelField = getNestedField(modelReflect, strings.Split(name, "."), 0)
 		} else {
 			modelField = modelReflect.FieldByName(dtoTypeField.Name)
