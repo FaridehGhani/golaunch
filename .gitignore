@@ -13,3 +13,4 @@
 
 # Sqlite database file
 *.db
+.DS_Store

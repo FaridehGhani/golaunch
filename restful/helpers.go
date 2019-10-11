@@ -24,30 +24,38 @@ var (
 
 // SendResponse by model and status code
 func SendResponse(response http.ResponseWriter, request *http.Request, statusCode int, model interface{}) {
+	switch value := model.(type) {
+	case error:
+		model = NewErrorDTO(value)
+	}
+
 	var bytes []byte
-	if model != nil {
+	switch value := model.(type) {
+	case []byte:
+		bytes = value
+		if response.Header().Get(ContentType) == "" {
+			response.Header().Set(ContentType, JSONContentType)
+		}
+	default:
 		switch request.Header.Get(ContentType) {
 		case XMLContentType:
 			response.Header().Set(ContentType, XMLContentType)
-			bytes, _ = ConvertToBytes(model, xml.Marshal)
+			bytes, _ = xml.Marshal(model)
 		case JSONContentType, "":
 			response.Header().Set(ContentType, JSONContentType)
-			bytes, _ = ConvertToBytes(model, json.Marshal)
+			bytes, _ = json.Marshal(model)
 		}
 	}
+
 	response.WriteHeader(statusCode)
 	response.Write(bytes)
 }
 
-// ConvertToBytes convert model to response byte array
-func ConvertToBytes(model interface{}, convert func(interface{}) ([]byte, error)) ([]byte, error) {
-	switch value := model.(type) {
-	case []byte:
-		return value, nil
-	case error:
-		model = NewErrorDTO(value)
+// AddResponseHeaders add header list to response
+func AddResponseHeaders(response http.ResponseWriter, headers http.Header) {
+	for key, value := range headers {
+		response.Header()[key] = value
 	}
-	return convert(model)
 }
 
 // ParseRequestBody parsing request body to model

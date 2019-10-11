@@ -1,4 +1,4 @@
-package http
+package httpext
 
 import (
 	"context"
@@ -22,6 +22,6 @@ func DataContextMiddleware(next http.Handler) http.Handler {
 }
 
 // GetDataContext return data from request context
-func GetDataContext(request *http.Request) *DataContext {
-	return request.Context().Value(dataContextKey).(*DataContext)
+func GetDataContext(request *http.Request) DataContext {
+	return *(request.Context().Value(dataContextKey).(*DataContext))
 }

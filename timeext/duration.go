@@ -1,4 +1,4 @@
-package types
+package timeext
 
 import (
 	"encoding/json"
@@ -16,36 +16,33 @@ type Duration struct {
 }
 
 // NewDuration create new instance of duration
-func NewDuration(duration time.Duration) *Duration {
-	return &Duration{Duration: duration}
+func NewDuration(duration time.Duration) Duration {
+	return Duration{Duration: duration}
 }
 
-// ParseDuration parses a duration string.
-func ParseDuration(s string) (*Duration, error) {
+// ParseDuration parses a duration string
+func ParseDuration(s string) (Duration, error) {
 	duration, err := time.ParseDuration(s)
-	if err != nil {
-		return nil, err
-	}
-	return NewDuration(duration), nil
+	return NewDuration(duration), err
 }
 
 // MarshalYAML convert duration to yaml
-func (duration *Duration) MarshalYAML() (interface{}, error) {
+func (duration Duration) MarshalYAML() (interface{}, error) {
 	return duration.String(), nil
 }
 
 // UnmarshalYAML convert yaml to duration
-func (duration *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (duration Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return unmarshal(&duration.Duration)
 }
 
 // MarshalJSON is implement for converting duration to json string
-func (duration *Duration) MarshalJSON() ([]byte, error) {
+func (duration Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(duration.String())
 }
 
 // UnmarshalJSON is implement for json string to duration
-func (duration *Duration) UnmarshalJSON(bytes []byte) error {
+func (duration Duration) UnmarshalJSON(bytes []byte) error {
 	var object interface{}
 	if err := json.Unmarshal(bytes, &object); err != nil {
 		return err
@@ -66,4 +63,16 @@ func (duration *Duration) UnmarshalJSON(bytes []byte) error {
 	default:
 		return errorInvalidDuration
 	}
+}
+
+// MarshalText convert duration to text
+func (duration Duration) MarshalText() (text []byte, err error) {
+	return []byte(duration.String()), nil
+}
+
+// UnmarshalText convert text to duration
+func (duration Duration) UnmarshalText(text []byte) error {
+	var err error
+	duration.Duration, err = time.ParseDuration(string(text))
+	return err
 }
