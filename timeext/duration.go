@@ -32,7 +32,7 @@ func (duration Duration) MarshalYAML() (interface{}, error) {
 }
 
 // UnmarshalYAML convert yaml to duration
-func (duration Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (duration *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return unmarshal(&duration.Duration)
 }
 
@@ -42,7 +42,7 @@ func (duration Duration) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON is implement for json string to duration
-func (duration Duration) UnmarshalJSON(bytes []byte) error {
+func (duration *Duration) UnmarshalJSON(bytes []byte) error {
 	var object interface{}
 	if err := json.Unmarshal(bytes, &object); err != nil {
 		return err
@@ -71,7 +71,7 @@ func (duration Duration) MarshalText() (text []byte, err error) {
 }
 
 // UnmarshalText convert text to duration
-func (duration Duration) UnmarshalText(text []byte) error {
+func (duration *Duration) UnmarshalText(text []byte) error {
 	var err error
 	duration.Duration, err = time.ParseDuration(string(text))
 	return err
