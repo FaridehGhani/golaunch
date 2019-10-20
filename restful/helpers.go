@@ -31,6 +31,7 @@ func SendResponse(response http.ResponseWriter, request *http.Request, statusCod
 
 	var bytes []byte
 	switch value := model.(type) {
+	case nil:
 	case []byte:
 		bytes = value
 		if response.Header().Get(ContentType) == "" {
