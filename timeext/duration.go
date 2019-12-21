@@ -2,12 +2,8 @@ package timeext
 
 import (
 	"encoding/json"
-	"errors"
+	"github.com/mohsensamiei/golaunch/errorext"
 	"time"
-)
-
-var (
-	errorInvalidDuration = errors.New("Invalid duration parsing type")
 )
 
 // Duration is a wrap of time.duration for supporting Marshal and Unmarshal
@@ -23,7 +19,10 @@ func NewDuration(duration time.Duration) Duration {
 // ParseDuration parses a duration string
 func ParseDuration(s string) (Duration, error) {
 	duration, err := time.ParseDuration(s)
-	return NewDuration(duration), err
+	if err != nil {
+		return NewDuration(0), errorext.NewValidationError("invalid duration string", err)
+	}
+	return NewDuration(duration), nil
 }
 
 // MarshalYAML convert duration to yaml
@@ -33,19 +32,26 @@ func (duration Duration) MarshalYAML() (interface{}, error) {
 
 // UnmarshalYAML convert yaml to duration
 func (duration *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	return unmarshal(&duration.Duration)
+	if err:= unmarshal(&duration.Duration); err!=nil{
+		return errorext.NewValidationError("invalid duration yaml", err)
+	}
+	return nil
 }
 
 // MarshalJSON is implement for converting duration to json string
 func (duration Duration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(duration.String())
+	result, err:= json.Marshal(duration.String())
+	if err != nil {
+		return nil, errorext.NewInternalError("parse duration to json failed", err)
+	}
+	return result, nil
 }
 
 // UnmarshalJSON is implement for json string to duration
 func (duration *Duration) UnmarshalJSON(bytes []byte) error {
 	var object interface{}
 	if err := json.Unmarshal(bytes, &object); err != nil {
-		return err
+		return errorext.NewValidationError("invalid duration json", err)
 	}
 	switch value := object.(type) {
 	case int64:
@@ -57,11 +63,11 @@ func (duration *Duration) UnmarshalJSON(bytes []byte) error {
 	case string:
 		var err error
 		if duration.Duration, err = time.ParseDuration(value); err != nil {
-			return err
+			return errorext.NewValidationError("invalid duration json", err)
 		}
 		return nil
 	default:
-		return errorInvalidDuration
+		return errorext.NewValidationError("invalid duration parsing type")
 	}
 }
 
@@ -74,5 +80,8 @@ func (duration Duration) MarshalText() (text []byte, err error) {
 func (duration *Duration) UnmarshalText(text []byte) error {
 	var err error
 	duration.Duration, err = time.ParseDuration(string(text))
-	return err
+	if err != nil {
+		return errorext.NewValidationError("invalid duration text", err)
+	}
+	return nil
 }

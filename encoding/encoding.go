@@ -2,7 +2,7 @@ package encoding
 
 import (
 	"bytes"
-	"errors"
+	"github.com/mohsensamiei/golaunch/errorext"
 )
 
 const (
@@ -30,7 +30,7 @@ func NewEncoding(alphabet string) (*Encoding, error) {
 
 	for i := 0; i < len(runes); i++ {
 		if _, ok := runeMap[runes[i]]; ok {
-			return nil, errors.New("Ambiguous alphabet")
+			return nil, errorext.NewInternalError("ambiguous encoding alphabet")
 		}
 
 		runeMap[runes[i]] = i
@@ -92,7 +92,7 @@ func (e *Encoding) Decode(source string) ([]byte, error) {
 		value, ok := e.alphabetMap[runes[i]]
 
 		if !ok {
-			return nil, errors.New("Non Base Character")
+			return nil, errorext.NewValidationError("has non-base characters")
 		}
 
 		carry := int(value)

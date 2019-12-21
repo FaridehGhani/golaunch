@@ -1,6 +1,7 @@
 package httpext
 
 import (
+	"github.com/mohsensamiei/golaunch/errorext"
 	"net/url"
 )
 
@@ -16,13 +17,13 @@ func NewURL(url *url.URL) *URL {
 	}
 }
 
-// ParseURL parses rawurl into a URL structure
-func ParseURL(rawurl string) (*URL, error) {
-	url, err := url.Parse(rawurl)
+// ParseURL parses raw into a URL structure
+func ParseURL(raw string) (*URL, error) {
+	urlAddress, err := url.Parse(raw)
 	if err != nil {
-		return nil, err
+		return nil, errorext.NewValidationError("invalid url string", err)
 	}
-	return NewURL(url), nil
+	return NewURL(urlAddress), nil
 }
 
 // MarshalYAML marshal url to yaml
@@ -34,11 +35,14 @@ func (url URL) MarshalYAML() (interface{}, error) {
 func (url *URL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var str string
 	if err := unmarshal(&str); err != nil {
-		return err
+		return errorext.NewValidationError("invalid url yml", err)
 	}
 	parsedURL, err := url.Parse(str)
+	if err != nil {
+		return errorext.NewValidationError("invalid url string", err)
+	}
 	url.URL = parsedURL
-	return err
+	return nil
 }
 
 // MarshalText convert url to text
@@ -50,5 +54,8 @@ func (url URL) MarshalText() (text []byte, err error) {
 func (url *URL) UnmarshalText(text []byte) error {
 	var err error
 	url.URL, err = url.Parse(string(text))
-	return err
+	if err != nil {
+		return errorext.NewValidationError("invalid url text", err)
+	}
+	return nil
 }
