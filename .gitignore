@@ -13,4 +13,7 @@
 
 # Sqlite database file
 *.db
+
+# Others
 .DS_Store
+.idea
